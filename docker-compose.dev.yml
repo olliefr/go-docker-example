@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+
+  godocker:
+    depends_on: 
+      - cockroachdb
+    build:
+      context: .
+    container_name: rest-server
+    hostname: rest-server
+    networks:
+      - godockernet
+    ports:
+      - 8000:8000
+    environment:
+      - PGUSER=${PGUSER:-wumpus}
+      - PGPASSWORD=${PGPASSWORD}
+      - PGHOST=${PGHOST:-roach1}
+      - PGPORT=${PGPORT:-26257}
+      - PGDATABASE=${PGDATABASE-godocker}
+
+  cockroachdb:
+    image: cockroachdb/cockroach:v20.2.5
+    container_name: roach1
+    hostname: roach1
+    networks:
+      - godockernet
+    ports:
+      - 26257:26257
+      - 8080:8080
+    volumes:
+      - roach1:/cockroach/cockroach-data
+    command: start-single-node --insecure
+
+volumes:
+  roach1:
+
+networks:
+  godockernet:
+    driver: bridge
